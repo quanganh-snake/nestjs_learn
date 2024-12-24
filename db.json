@@ -1,10 +1,33 @@
 {
   "products": [
     {
-      "name": "Product 5",
-      "description": "Description 5",
-      "price": 500,
-      "id": "1734623057435"
+      "name": "Product 1735011217693 - update",
+      "description": "Galaxy A25 5G lược bỏ những phần không cần thiết và chỉ nổi bật thiết kế đơn giản với cụm camera gọn gàng.",
+      "price": 100,
+      "category": "electronics",
+      "id": "1735011217693",
+      "cetagory": "furniture"
+    },
+    {
+      "name": "Điện Thoại Samsung Galaxy A25 5G (6GB/128GB)",
+      "description": "Galaxy A25 5G lược bỏ những phần không cần thiết và chỉ nổi bật thiết kế đơn giản với cụm camera gọn gàng.",
+      "price": 100,
+      "category": "electronics",
+      "id": "1735011701440"
+    },
+    {
+      "name": "Điện Thoại Samsung Galaxy A25 5G (6GB/128GB)",
+      "description": "Galaxy A25 5G lược bỏ những phần không cần thiết và chỉ nổi bật thiết kế đơn giản với cụm camera gọn gàng.",
+      "price": 100,
+      "category": "electronics",
+      "id": "1735011781822"
+    },
+    {
+      "name": "Điện Thoại Samsung Galaxy A25 5G (6GB/128GB)",
+      "description": "Galaxy A25 5G lược bỏ những phần không cần thiết và chỉ nổi bật thiết kế đơn giản với cụm camera gọn gàng.",
+      "price": 100,
+      "category": "electronics",
+      "id": "1735011790358"
     }
   ]
 }
