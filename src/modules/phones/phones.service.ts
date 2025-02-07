@@ -38,4 +38,12 @@ export class PhonesService {
   remove(id: number) {
     return `This action removes a #${id} phone`;
   }
+
+  async deleteByUser(userId: number) {
+    return await this.phoneRepository.delete({
+      user: {
+        id: userId
+      }
+    });
+  }
 }

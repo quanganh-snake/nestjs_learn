@@ -9,6 +9,8 @@ import { UsersModule } from './modules/users/users.module';
 import { User } from 'src/modules/users/entities/user.entity';
 import { Phone } from 'src/modules/users/entities/phone.entity';
 import { PhonesModule } from './modules/phones/phones.module';
+import { Post } from 'src/modules/users/entities/post.entity';
+import { PostsModule } from './modules/posts/posts.module';
 @Module({
   imports: [ConfigModule.forRoot(), TypeOrmModule.forRoot({
     type: 'mysql',
@@ -17,11 +19,11 @@ import { PhonesModule } from './modules/phones/phones.module';
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    entities: [User, Phone],
+    entities: [User, Phone, Post],
     synchronize: process.env.NODE_ENV === 'development' || !process.env.NODE_ENV,
     logging: process.env.NODE_ENV === 'development' || !process.env.NODE_ENV,
     autoLoadEntities: true
-  }), ProductModule, UsersModule, PhonesModule],
+  }), ProductModule, UsersModule, PhonesModule, PostsModule],
   controllers: [AppController, ProductsController],
   providers: [AppService],
 })

@@ -1,5 +1,6 @@
 import { Phone } from "src/modules/users/entities/phone.entity";
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Post } from "src/modules/users/entities/post.entity";
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('users')
 export class User {
@@ -49,4 +50,7 @@ export class User {
 
   @OneToOne(() => Phone, (phone) => phone.user)
   phone: Phone
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[]
 }

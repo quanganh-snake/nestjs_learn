@@ -25,13 +25,26 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  findOne(@Param('id') id: string, @Query() query: { includes: string, [key: string]: string }) {
+    return this.usersService.findOne(+id, query);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string) {
+
+    console.log('deleteOne - id: ', id)
+
+    const delCount = await this.usersService.deleteOne(+id);
+    return {
+      success: true,
+      message: 'Xóa dữ liệu thành công',
+      delCount
+    }
   }
 
   @Delete()
@@ -40,7 +53,7 @@ export class UsersController {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new BadRequestException('Vui lòng truyền 1 mảng dữ liệu ids cần xóa');
     }
-    const delCount = await this.usersService.remove(body);
+    const delCount = await this.usersService.deleteMany(body);
     if (!delCount) {
       return {
         success: false,
