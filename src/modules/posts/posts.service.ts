@@ -1,67 +1,81 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { UsersService } from 'src/modules/users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Post } from 'src/modules/users/entities/post.entity';
+import { Post } from 'src/entities/post.entity';
+import { CategoriesService } from 'src/modules/categories/categories.service';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class PostsService {
 
   constructor(
-    // private readonly usersService: UsersService,
-    @InjectRepository(Post) private postRepository: Repository<Post>
+    @InjectRepository(Post)
+    private readonly postRepository: Repository<Post>,
+    private readonly categoryService: CategoriesService,
   ) { }
 
-  create(createPostDto: CreatePostDto) {
-    return 'This action adds a new post';
-  }
-
   findAll() {
-    return `This action returns all posts`;
-  }
-
-  findOne(id: number) {
-    return this.postRepository.findOne({
-      where: {
-        id
-      },
-      relations: {
-        user: true
-      }
+    return this.postRepository.find({
+      relations: ['categories'],
     });
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  findById(id: string) {
+    return this.postRepository.findOne({
+      where: { id: +id },
+      relations: {
+        categories: true,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async create(body: any) {
+    const { categories, ...postFromBody } = body;
+    const categoryList = await Promise.all(categories.map((id: string) => this.categoryService.findById(id)));
+
+    // return categoryList
+    //categoryList là 1 mảng chứa các promise
+    const post = this.postRepository.create({
+      ...postFromBody,
+      categories: categoryList,
+    });
+    await this.postRepository.save(post);
+    return post
   }
 
-  async findByUser(userId: number) {
-    // const findUser = await this.usersService.findOne(userId);
-    // if (!findUser) return false
-    // return findUser.posts;
-    return []
+  async update(id: number, body: any) {
+    const { categories, ...postFromBody } = body;
+    const categoriesList = await Promise.all(
+      categories.map((categoryId: number) => {
+        return this.categoryService.findById(categoryId.toString());
+      }),
+    );
+    const post = await this.postRepository.findOne({
+      where: { id },
+    });
+    const newPost = {
+      ...post,
+      ...postFromBody,
+    };
+    newPost.categories = categoriesList;
+
+    await this.postRepository.save(newPost);
+
+    return post;
   }
 
-  async createPostByUser(userId: number, body: Partial<Post>) {
-    // const findUser = await this.usersService.findOne(userId);
-    // if (!findUser) return false
-    // const post = this.postRepository.create(body);
-    // post.user = findUser;
-    // return this.postRepository.save(post);
-  }
+  async remove(id: number) {
+    //Xóa dữ liệu bảng trung gian
+    const post = await this.postRepository.findOne({
+      where: { id },
+      relations: {
+        categories: true,
+      },
+    });
+    post.categories = [];
+    await this.postRepository.save(post);
 
-  async deleteByUser(userId: number) {
-    // const findUser = await this.usersService.findOne(userId);
-    // if (!findUser) return false
-    // return this.postRepository.delete({
-    //   user: findUser
-    // });
+    //Xóa post theo id
+    await this.postRepository.delete(id);
+    return post;
   }
-
 }
