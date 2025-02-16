@@ -7,7 +7,10 @@ import { Post } from 'src/entities/post.entity';
 import { Category } from 'src/entities/category.entity';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { PostsModule } from './modules/posts/posts.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import typeorm from 'src/config/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,8 +24,10 @@ import typeorm from 'src/config/typeorm';
     }),
     PostsModule,
     CategoriesModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtModule],
 })
 export class AppModule { }
