@@ -1,22 +1,81 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, BadRequestException, UnauthorizedException, Headers, UseGuards, Delete, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { AuthGuard } from 'src/guards/auth/auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('login')
-  login(@Body() { email, password }) {
-
+  async login(@Body() { email, password }) {
     if (!email || !password) {
-      throw new BadRequestException('Email and password are required!');
+      throw new BadRequestException('Email and password are required');
     }
-
-    return this.authService.login({
-      email,
-      password
-    });
+    const user = await this.authService.checkAuth(email, password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    return user;
   }
+
+  @Get('profile')
+  @UseGuards(AuthGuard)
+  // async profile(@Headers() headers: any) {
+  //   const token = headers.authorization.split(' ').slice(-1).join();
+  //   const user = await this.authService.getUser(token);
+  //   if (!user) {
+  //     throw new UnauthorizedException('Invalid token');
+  //   }
+  //   return user;
+  // }
+  async profile(@Req() request: Request & { user: { [key: string]: string } }) {
+    return request.user;
+  }
+
+  @Post('refresh-token')
+  async refreshToken(@Body() { refresh_token }) {
+    if (!refresh_token) {
+      throw new BadRequestException('Refresh token is required');
+    }
+    const user = await this.authService.refreshToken(refresh_token);
+    if (!user) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    return user;
+  }
+
+  @Delete('revoke-refresh-token')
+  async revokeRefreshToken(@Body() { refresh_token }) {
+    const isRevoke = await this.authService.revokeRefreshToken(refresh_token);
+    if (!isRevoke) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    return {
+      success: true,
+      message: 'Revoke refresh token successfully'
+    };
+  }
+
+  @Delete('logout')
+  @UseGuards(AuthGuard)
+  async logout(@Req() request: Request & { user: { [key: string]: string } }) {
+    const accessToken = request.user.access_token;
+    const exp = request.user.token_exp;
+    await this.authService.logout(accessToken, +exp);
+    return {
+      success: true,
+      message: 'Logout successfully',
+    };
+  }
+  // async logout(@Headers() headers: any) {
+  //   const token = headers.authorization.split(' ').slice(-1).join();
+  //   const isLogout = await this.authService.logout(token);
+  //   if (!isLogout) {
+  //     throw new UnauthorizedException('Invalid token');
+  //   }
+  //   return {
+  //     success: true,
+  //     message: 'Logout successfully'
+  //   };
+  // }
 }

@@ -1,42 +1,23 @@
-# NESTJS - Buổi 12
+# NESTJS - Buổi 13 - Authentication
 
-## Seeder -> Tạo dữ liệu mẫu
+## Guard => Dùng giống middleware => Nhưng có chức năng xử lý liên quan đến xác thực
 
-Factory -> định nghĩa dữ liệu
+## RefreshToken
 
-1. Cấu hình orm cho seeder
+Công thức tính thời gian hết hạn của Token
 
-**Lưu ý**: Cấu hình bao gồm các thông tin:
+1. Lấy thời gian exp của token (mặc định tính bằng s -> từ timestamp)
+2. Lấy thời gian hiện tại new Date().getTime() / 1000 -> vì getTime() mặc định lấy ms
+3. Lấy thời gian token trừ thời gian hiện tại > 0 vẫn còn hạn
 
-- Folder seeds, factories, entities
+## Blacklist Token
 
-- Thông tin connect DB để sinh dữ liệu vào DB
+- Khi logout -> nếu mà accesstoken vẫn còn hạn
+  -> lưu lại vào Redis kèm giá trị expire còn lại của accessToken
+  -> nhớ hash trc khi lưu vì Token dài gây tốn tài nguyên
 
-- CLI script cần phải
+-> kiểm tra blacklist
 
-```
-module.exports = {
-  seeds: ['src/databases/seeders/**/*{.ts,.js}'],
-  factories: ['src/databases/factories/**/*{.ts,.js}'],
-  entities: [__dirname + '/**/entities/**/*.entity{.ts,.js}'],
-  type: 'mysql',
-  host: '127.0.0.1',
-  port: 3306,
-  username: 'root',
-  password: '111111',
-  database: 'nestjs_buoi10',
-};
+## Buổi sau:
 
-```
-
-## QueryBuilder
-
-## Authentication
-
-### Phương pháp 1 (Cũ): Session Base Authentication
-
--> Là StateFul -> Lưu trạng thái người dùng trên server
-
-### Phương pháp 2 : Token Base Authentication
-
--> Là StateLess -> Không lưu trạng thái lên server -> Lưu ở đâu cũng được (Client - LocalStorage, Redis, Firebase, ...)
+- Tìm hiểu: JWT Fingerprint
