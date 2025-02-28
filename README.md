@@ -1,23 +1,15 @@
-# NESTJS - Buổi 13 - Authentication
+# NESTJS - Buổi 14 - Authentication - P3
 
-## Guard => Dùng giống middleware => Nhưng có chức năng xử lý liên quan đến xác thực
+## JWT Fingerprint
 
-## RefreshToken
+## Login with Social (Đăng nhập thông qua MXH)
 
-Công thức tính thời gian hết hạn của Token
+Format chung: Lấy AuthCode -> Lấy AccessToken của MXH -> Lấy thông tin user
 
-1. Lấy thời gian exp của token (mặc định tính bằng s -> từ timestamp)
-2. Lấy thời gian hiện tại new Date().getTime() / 1000 -> vì getTime() mặc định lấy ms
-3. Lấy thời gian token trừ thời gian hiện tại > 0 vẫn còn hạn
+### Google Auth
 
-## Blacklist Token
+1. Lấy Authentication Code
 
-- Khi logout -> nếu mà accesstoken vẫn còn hạn
-  -> lưu lại vào Redis kèm giá trị expire còn lại của accessToken
-  -> nhớ hash trc khi lưu vì Token dài gây tốn tài nguyên
+- URL: https://accounts.google.com/o/oauth2/
 
--> kiểm tra blacklist
-
-## Buổi sau:
-
-- Tìm hiểu: JWT Fingerprint
+-

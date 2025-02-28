@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -12,7 +10,7 @@ import * as md5 from 'md5';
 
 @Injectable()
 export class AuthService {
-
+  private userAgent: string = null;
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -20,7 +18,8 @@ export class AuthService {
     @InjectRedis() private readonly redis: Redis
   ) { }
 
-  async checkAuth(email: string, password: string) {
+  async checkAuth(email: string, password: string, userAgent: string) {
+    this.userAgent = md5(userAgent);
     //Kiểm tra email có tồn tại hay không?
     const user = await this.userRepository.findOne({
       where: { email },
@@ -75,15 +74,22 @@ export class AuthService {
     }
   }
 
-  async getUser(token: string) {
+  async getUser(token: string, userAgent: string) {
     const payload = this.decodeToken(token);
-    if (!payload) return false;
+    if (!payload || md5(userAgent) !== payload.userAgent) return false;
+
     return this.userRepository.findOne({ where: { id: payload.sub } });
   }
 
   createToken(user: User) {
-    const payload = { sub: user.id, email: user.email };
-    return this.jwtService.signAsync(payload);
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      userAgent: this.userAgent
+    };
+    return this.jwtService.signAsync(payload, {
+      expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME
+    });
   }
 
   async createRefreshToken(user: User) {
@@ -105,6 +111,15 @@ export class AuthService {
     return this.jwtService.decode(token);
   }
 
+  isTokenExpired(token: string) {
+    const decoded = this.decodeToken(token);
+    console.log("🚀 ~ AuthService ~ isTokenExpired ~ decoded:", decoded)
+    if (!decoded) return true;
+    const currentTime = new Date().getTime() / 1000;
+    console.log("🚀 ~ AuthService ~ isTokenExpired ~ currentTime:", Math.round(currentTime))
+    return Math.round(decoded.exp) < Math.round(currentTime);
+  }
+
   async saveHashTokenToRedis(token: {
     access_token: string,
     refresh_token: string
@@ -120,6 +135,40 @@ export class AuthService {
       access_token: hashACT,
       refresh_token: hashRFT
     }), 'EX', diff);
+  }
 
+  async getGoogleUser(google_access_token: string) {
+    try {
+      const response = await fetch(`${process.env.GOOGLE_AUTHENTICATION_URL}/userInfo?access_token=${google_access_token}`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        console.log("🚀 ~ AuthService ~ getGoogleUser ~ response:", response)
+        return false;
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async loginGoogle(googleUser: any, userAgent: string) {
+    let user = await this.userRepository.findOne({
+      where: { email: googleUser.email },
+    })
+    if (!user) {
+      const userDara = this.userRepository.create({
+        email: googleUser.email,
+        password: await hashString(googleUser.email),
+        username: googleUser.email,
+        fullname: googleUser.name,
+        status: true
+      })
+      user = await this.userRepository.save(userDara)
+    }
+    return this.getToken(user);
   }
 }

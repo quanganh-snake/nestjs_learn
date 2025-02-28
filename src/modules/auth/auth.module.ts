@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { SocialLoginController } from 'src/modules/auth/social.controller';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, SocialLoginController],
   providers: [AuthService],
 })
 export class AuthModule { }
