@@ -7,6 +7,7 @@ import { comparePassword, hashString } from 'src/utils/hashing';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import * as md5 from 'md5';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -15,8 +16,21 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    @InjectRedis() private readonly redis: Redis
+    @InjectRedis() private readonly redis: Redis,
+    private readonly mailerService: MailerService
   ) { }
+
+
+  // Buoi 15: Send Mail Register
+  async regiter() {
+    const response = this.mailerService.sendMail({
+      to: 'quanganhsnake2001@gmail.com',
+      subject: '[NestJS] - Test email',
+      html: '<b>Welcome to NestJS</b>',
+    })
+  }
+
+  // Buoi 12-13-14: Authentication
 
   async checkAuth(email: string, password: string, userAgent: string) {
     this.userAgent = md5(userAgent);

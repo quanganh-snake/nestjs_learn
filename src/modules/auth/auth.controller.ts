@@ -7,6 +7,11 @@ import { Request } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
+  @Post('register')
+  async register() {
+    return this.authService.regiter();
+  }
+
   @Post('login')
   async login(@Body() { email, password }, @Req() request: Request) {
     if (!email || !password) {
